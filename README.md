@@ -9,4 +9,4 @@ This repository builds a merged XMLTV feed from:
 The output is rebuilt automatically on a schedule and published through GitHub Pages.
 
 ## Public feed
-https://vcicio.github.io/US-EPG/
+https://vcicio.github.io/US-EPG/merged_epg.xml.gz
