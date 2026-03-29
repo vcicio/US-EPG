@@ -11,12 +11,9 @@ from pathlib import Path
 DAYS_FORWARD = 10
 
 SOURCE_URLS = [
-    "https://raw.githubusercontent.com/globetvapp/epg/main/Usa/usa1.xml.gz",
-    "https://raw.githubusercontent.com/globetvapp/epg/main/Usa/usa2.xml.gz",
-    "https://raw.githubusercontent.com/globetvapp/epg/main/Usa/usa3.xml.gz",
-    "https://raw.githubusercontent.com/globetvapp/epg/main/Usa/usa4.xml.gz",
-    "https://raw.githubusercontent.com/globetvapp/epg/main/Usa/usa5.xml.gz",
-    "https://raw.githubusercontent.com/globetvapp/epg/main/Usa/usa6.xml.gz",
+    "https://epgshare01.online/epgshare01/epg_ripper_US_LOCALS1.xml.gz",
+    "https://epgshare01.online/epgshare01/epg_ripper_US2.xml.gz",
+    "https://epgshare01.online/epgshare01/epg_ripper_US_SPORTS1.xml.gz",
 ]
 
 ROOT_DIR = Path(__file__).resolve().parents[1]
