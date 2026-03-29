@@ -35,12 +35,12 @@ Your GitHub Pages site publishes the generated files from the `site/` folder.
 ## Current Source Status
 
 <!-- EPG_STATUS_START -->
-Last updated: **2026-03-29 22:45:46 UTC**
+Last updated: **2026-03-29 22:52:13 UTC**
 
-Programmes kept in latest build: **520086**
+Programmes kept in latest build: **520051**
 
-Window start: `2026-03-29T22:41:58.568365+00:00`
-Window end: `2026-04-08T22:41:58.568365+00:00`
+Window start: `2026-03-29T22:48:12.173813+00:00`
+Window end: `2026-04-08T22:48:12.173813+00:00`
 
 ### Source health
 
@@ -49,14 +49,13 @@ Window end: `2026-04-08T22:41:58.568365+00:00`
 | `https://epgshare01.online/epgshare01/epg_ripper_US_LOCALS1.xml.gz` | Working |  |
 | `https://epgshare01.online/epgshare01/epg_ripper_US2.xml.gz` | Working |  |
 | `https://epgshare01.online/epgshare01/epg_ripper_US_SPORTS1.xml.gz` | Working |  |
-| `http://proxpanel.fans:8080/xmltv.php?username=7112221312&password=5268412129` | Failed | download failed: Failed to download valid source after 3 attempts: http://proxpanel.fans:8080/xmltv.php?username=7112221312&password=5268412129 |
 
 ### Summary
 
 - Working sources: **3**
-- Failed sources: **1**
+- Failed sources: **0**
 
-**Warning:** The latest published EPG may be incomplete because one or more sources failed.
+All configured sources succeeded in the latest build.
 
 <!-- EPG_STATUS_END -->
 
