@@ -35,24 +35,25 @@ Your GitHub Pages site publishes the generated files from the `site/` folder.
 ## Current Source Status
 
 <!-- EPG_STATUS_START -->
-Last updated: **2026-03-29 22:30:10 UTC**
+Last updated: **2026-03-29 22:45:46 UTC**
 
-Programmes kept in latest build: **58435**
+Programmes kept in latest build: **520086**
 
-Window start: `2026-03-29T22:29:59.075878+00:00`
-Window end: `2026-04-08T22:29:59.075878+00:00`
+Window start: `2026-03-29T22:41:58.568365+00:00`
+Window end: `2026-04-08T22:41:58.568365+00:00`
 
 ### Source health
 
 | Source | Status | Notes |
 |---|---|---|
-| `https://epgshare01.online/epgshare01/epg_ripper_US_LOCALS1.xml.gz` | Failed | download failed: Failed to download valid source after 3 attempts: https://epgshare01.online/epgshare01/epg_ripper_US_LOCALS1.xml.gz |
+| `https://epgshare01.online/epgshare01/epg_ripper_US_LOCALS1.xml.gz` | Working |  |
 | `https://epgshare01.online/epgshare01/epg_ripper_US2.xml.gz` | Working |  |
 | `https://epgshare01.online/epgshare01/epg_ripper_US_SPORTS1.xml.gz` | Working |  |
+| `http://proxpanel.fans:8080/xmltv.php?username=7112221312&password=5268412129` | Failed | download failed: Failed to download valid source after 3 attempts: http://proxpanel.fans:8080/xmltv.php?username=7112221312&password=5268412129 |
 
 ### Summary
 
-- Working sources: **2**
+- Working sources: **3**
 - Failed sources: **1**
 
 **Warning:** The latest published EPG may be incomplete because one or more sources failed.
