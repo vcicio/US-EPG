@@ -309,8 +309,6 @@ def build_readme_status_block(
 
     lines = [
         README_STATUS_START,
-        "## Current Source Status",
-        "",
         f"Last updated: **{timestamp}**",
         "",
         f"Programmes kept in latest build: **{programmes_kept}**",
