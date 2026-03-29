@@ -26,6 +26,28 @@ https://vcicio.github.io/US-EPG/
 
 ## Current Source Status
 <!-- EPG_STATUS_START -->
+Last updated: **2026-03-29 06:12:29 PM CDT**
+
+Programmes kept in latest build: **516068**
+
+Window start: `2026-03-29T23:08:26.964413+00:00`
+Window end: `2026-04-08T23:08:26.964413+00:00`
+
+### Source health
+
+| Source | Status | Notes |
+|---|---|---|
+| `https://epgshare01.online/epgshare01/epg_ripper_US_LOCALS1.xml.gz` | Working |  |
+| `https://epgshare01.online/epgshare01/epg_ripper_US2.xml.gz` | Working |  |
+| `https://epgshare01.online/epgshare01/epg_ripper_US_SPORTS1.xml.gz` | Working |  |
+
+### Summary
+
+- Working sources: **3**
+- Failed sources: **0**
+
+All configured sources succeeded in the latest build.
+
 <!-- EPG_STATUS_END -->
 
 ## Notes
