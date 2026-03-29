@@ -1,5 +1,6 @@
 import gzip
 import shutil
+import time
 import urllib.request
 import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta, timezone
@@ -44,7 +45,7 @@ def format_xmltv_datetime(dt: datetime) -> str:
     return dt.strftime("%Y%m%d%H%M%S %z")
 
 
-def download_file(url: str, destination: Path) -> None:
+def download_file(url: str, destination: Path, retries: int = 3, retry_delay: int = 3) -> None:
     destination.parent.mkdir(parents=True, exist_ok=True)
 
     headers = {
@@ -61,15 +62,82 @@ def download_file(url: str, destination: Path) -> None:
         "Referer": "https://epgshare01.online/epgshare01/",
     }
 
-    request = urllib.request.Request(url, headers=headers)
+    last_error = None
 
-    with urllib.request.urlopen(request, timeout=60) as response, open(destination, "wb") as out_file:
-        shutil.copyfileobj(response, out_file)
+    for attempt in range(1, retries + 1):
+        try:
+            if destination.exists():
+                destination.unlink()
+
+            request = urllib.request.Request(url, headers=headers)
+
+            with urllib.request.urlopen(request, timeout=60) as response, open(destination, "wb") as out_file:
+                shutil.copyfileobj(response, out_file)
+
+            size = destination.stat().st_size
+            print(f"Saved {destination.name}: {size} bytes")
+
+            if size == 0:
+                raise ValueError(f"Downloaded file is empty from {url}")
+
+            # Validate that it is actually readable as gzip and contains some data
+            with gzip.open(destination, "rb") as f:
+                preview_bytes = f.read(512)
+
+            if not preview_bytes.strip():
+                raise ValueError(f"Gzip content is empty from {url}")
+
+            if not preview_bytes.lstrip().startswith(b"<"):
+                preview = preview_bytes[:200].decode("utf-8", errors="replace")
+                raise ValueError(
+                    f"Downloaded content does not look like XML from {url}. Preview: {preview!r}"
+                )
+
+            return
+
+        except Exception as e:
+            last_error = e
+            print(f"Attempt {attempt}/{retries} failed for {url}: {e}")
+
+            if attempt < retries:
+                time.sleep(retry_delay)
+
+    raise RuntimeError(f"Failed to download valid source after {retries} attempts: {url}") from last_error
 
 
-def load_xmltv_gz(path: Path) -> ET.ElementTree:
-    with gzip.open(path, "rb") as f:
-        return ET.parse(f)
+def load_xmltv_gz(path: Path, source_url: str) -> ET.ElementTree:
+    if not path.exists():
+        raise FileNotFoundError(f"Missing downloaded file for {source_url}: {path}")
+
+    size = path.stat().st_size
+    if size == 0:
+        raise ValueError(f"Downloaded file is empty for {source_url}: {path}")
+
+    try:
+        with gzip.open(path, "rb") as f:
+            data = f.read()
+    except OSError as e:
+        raise ValueError(f"Invalid gzip file for {source_url}: {path}") from e
+
+    if not data.strip():
+        raise ValueError(f"Decompressed XML is empty for {source_url}: {path}")
+
+    preview = data[:200].decode("utf-8", errors="replace")
+    print(f"Preview for {path.name}: {preview[:120]!r}")
+
+    if not data.lstrip().startswith(b"<"):
+        raise ValueError(
+            f"Content does not appear to be XML for {source_url}: {path}. Preview: {preview!r}"
+        )
+
+    try:
+        root = ET.fromstring(data)
+    except ET.ParseError as e:
+        raise ValueError(
+            f"XML parse failed for {source_url}: {path}. Preview: {preview!r}"
+        ) from e
+
+    return ET.ElementTree(root)
 
 
 def save_xmltv(tree: ET.ElementTree, path: Path) -> None:
@@ -203,13 +271,24 @@ def main():
     SITE_DIR.mkdir(parents=True, exist_ok=True)
 
     downloaded_files = []
+
     for i, url in enumerate(SOURCE_URLS, start=1):
         local_path = WORK_DIR / f"source_{i}.xml.gz"
-        print(f"Downloading: {url}")
+        print(f"Downloading source_{i}: {url}")
         download_file(url, local_path)
-        downloaded_files.append(local_path)
+        downloaded_files.append((url, local_path))
 
-    trees = [load_xmltv_gz(path) for path in downloaded_files]
+    trees = []
+    for url, path in downloaded_files:
+        print(f"Parsing {path.name} from {url}")
+        tree = load_xmltv_gz(path, url)
+        trees.append(tree)
+
+    if len(trees) != len(SOURCE_URLS):
+        raise RuntimeError(
+            f"Expected {len(SOURCE_URLS)} essential sources, but only parsed {len(trees)}."
+        )
+
     merged_tree = merge_trees(trees)
     merged_root = merged_tree.getroot()
 
