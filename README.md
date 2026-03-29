@@ -35,27 +35,30 @@ Your GitHub Pages site publishes the generated files from the `site/` folder.
 ## Current Source Status
 
 <!-- EPG_STATUS_START -->
-Last updated: **2026-03-29 21:06:45 UTC**
+Last updated: **2026-03-29 22:26:11 UTC**
 
-Programmes kept in latest build: **59341**
+Programmes kept in latest build: **0**
 
-Window start: `2026-03-29T21:06:33.736382+00:00`
-Window end: `2026-04-08T21:06:33.736382+00:00`
+Window start: `2026-03-29T22:26:09.688978+00:00`
+Window end: `2026-04-08T22:26:09.688978+00:00`
 
 ### Source health
 
 | Source | Status | Notes |
 |---|---|---|
-| `https://epgshare01.online/epgshare01/epg_ripper_US_LOCALS1.xml.gz` | Failed | download failed: Failed to download valid source after 3 attempts: https://epgshare01.online/epgshare01/epg_ripper_US_LOCALS1.xml.gz |
-| `https://epgshare01.online/epgshare01/epg_ripper_US2.xml.gz` | Working |  |
-| `https://epgshare01.online/epgshare01/epg_ripper_US_SPORTS1.xml.gz` | Working |  |
+| `https://raw.githubusercontent.com/globetvapp/epg/main/Usa/usa1.xml.gz` | Working |  |
+| `https://raw.githubusercontent.com/globetvapp/epg/main/Usa/usa2.xml.gz` | Working |  |
+| `https://raw.githubusercontent.com/globetvapp/epg/main/Usa/usa3.xml.gz` | Working |  |
+| `https://raw.githubusercontent.com/globetvapp/epg/main/Usa/usa4.xml.gz` | Working |  |
+| `https://raw.githubusercontent.com/globetvapp/epg/main/Usa/usa5.xml.gz` | Working |  |
+| `https://raw.githubusercontent.com/globetvapp/epg/main/Usa/usa6.xml.gz` | Working |  |
 
 ### Summary
 
-- Working sources: **2**
-- Failed sources: **1**
+- Working sources: **6**
+- Failed sources: **0**
 
-**Warning:** The latest published EPG may be incomplete because one or more sources failed.
+All configured sources succeeded in the latest build.
 
 <!-- EPG_STATUS_END -->
 
