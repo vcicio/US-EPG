@@ -2,10 +2,13 @@
 
 A custom merged XMLTV feed built from multiple US EPGShare sources and published through GitHub Pages.
 
-## Downloads
+## Download Links
 
-- [merged_epg.xml.gz](./site/merged_epg.xml.gz)
-- [merged_epg.xml](./site/merged_epg.xml)
+Use the links below to access the latest published EPG files:
+
+- [Download merged_epg.xml.gz](https://vcicio.github.io/US-EPG/merged_epg.xml.gz)
+- [Download merged_epg.xml](https://vcicio.github.io/US-EPG/merged_epg.xml)
+- [View published site](https://vcicio.github.io/US-EPG/)
 
 ## Source Feeds Used
 
