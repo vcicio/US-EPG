@@ -26,6 +26,30 @@ Your GitHub Pages site publishes the generated files from the `site/` folder.
 ## Current Source Status
 
 <!-- EPG_STATUS_START -->
+## Current Source Status
+
+Last updated: **2026-03-29 21:00:29 UTC**
+
+Programmes kept in latest build: **59376**
+
+Window start: `2026-03-29T21:00:18.067749+00:00`
+Window end: `2026-04-08T21:00:18.067749+00:00`
+
+### Source health
+
+| Source | Status | Notes |
+|---|---|---|
+| `https://epgshare01.online/epgshare01/epg_ripper_US_LOCALS1.xml.gz` | Failed | download failed: Failed to download valid source after 3 attempts: https://epgshare01.online/epgshare01/epg_ripper_US_LOCALS1.xml.gz |
+| `https://epgshare01.online/epgshare01/epg_ripper_US2.xml.gz` | Working |  |
+| `https://epgshare01.online/epgshare01/epg_ripper_US_SPORTS1.xml.gz` | Working |  |
+
+### Summary
+
+- Working sources: **2**
+- Failed sources: **1**
+
+**Warning:** The latest published EPG may be incomplete because one or more sources failed.
+
 <!-- EPG_STATUS_END -->
 
 ## Notes
