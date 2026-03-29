@@ -5,6 +5,7 @@ import urllib.request
 import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 
 # ===== SETTINGS =====
@@ -14,7 +15,6 @@ SOURCE_URLS = [
     "https://epgshare01.online/epgshare01/epg_ripper_US_LOCALS1.xml.gz",
     "https://epgshare01.online/epgshare01/epg_ripper_US2.xml.gz",
     "https://epgshare01.online/epgshare01/epg_ripper_US_SPORTS1.xml.gz",
-   
 ]
 
 ROOT_DIR = Path(__file__).resolve().parents[1]
