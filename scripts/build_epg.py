@@ -19,9 +19,13 @@ SOURCE_URLS = [
 ROOT_DIR = Path(__file__).resolve().parents[1]
 WORK_DIR = ROOT_DIR / "work"
 SITE_DIR = ROOT_DIR / "site"
+README_PATH = ROOT_DIR / "README.md"
 
 OUTPUT_XML_GZ = SITE_DIR / "merged_epg.xml.gz"
 OUTPUT_XML = SITE_DIR / "merged_epg.xml"
+
+README_STATUS_START = "<!-- EPG_STATUS_START -->"
+README_STATUS_END = "<!-- EPG_STATUS_END -->"
 
 
 def parse_xmltv_datetime(dt_str: str) -> datetime:
@@ -241,8 +245,26 @@ def trim_programmes(root: ET.Element, days_forward: int) -> tuple[int, str, str]
     )
 
 
-def write_index_html(programmes_kept: int, window_start: str, window_end: str) -> None:
+def write_index_html(
+    programmes_kept: int,
+    window_start: str,
+    window_end: str,
+    successful_sources: list[str],
+    failed_sources: list[tuple[str, str]],
+) -> None:
     SITE_DIR.mkdir(parents=True, exist_ok=True)
+
+    success_html = "\n".join(f"    <li>{src}</li>" for src in successful_sources) or "    <li>None</li>"
+    failed_html = "\n".join(
+        f"    <li><strong>{src}</strong><br>{reason}</li>" for src, reason in failed_sources
+    ) or "    <li>None</li>"
+
+    warning_html = ""
+    if failed_sources:
+        warning_html = """
+  <h2 style="color: red;">Warning</h2>
+  <p><strong>This EPG was built with missing or failed sources and may be incomplete.</strong></p>
+"""
 
     html = f"""<!doctype html>
 <html lang="en">
@@ -252,21 +274,119 @@ def write_index_html(programmes_kept: int, window_start: str, window_end: str) -
 </head>
 <body>
   <h1>US-EPG</h1>
-  <p>This feed is auto-generated from:</p>
-  <ul>
-    <li>epg_ripper_US_LOCALS1.xml.gz</li>
-    <li>epg_ripper_US2.xml.gz</li>
-    <li>epg_ripper_US_SPORTS1.xml.gz</li>
-  </ul>
+
+{warning_html}
   <p><a href="merged_epg.xml.gz">Download merged_epg.xml.gz</a></p>
   <p><a href="merged_epg.xml">Download merged_epg.xml</a></p>
+
   <p>Programmes kept: {programmes_kept}</p>
   <p>Window start: {window_start}</p>
   <p>Window end: {window_end}</p>
+
+  <h2>Successful sources</h2>
+  <ul>
+{success_html}
+  </ul>
+
+  <h2>Failed sources</h2>
+  <ul>
+{failed_html}
+  </ul>
 </body>
 </html>
 """
     (SITE_DIR / "index.html").write_text(html, encoding="utf-8")
+
+
+def build_readme_status_block(
+    successful_sources: list[str],
+    failed_sources: list[tuple[str, str]],
+    programmes_kept: int,
+    window_start: str,
+    window_end: str,
+) -> str:
+    timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
+
+    lines = [
+        README_STATUS_START,
+        "## Current Source Status",
+        "",
+        f"Last updated: **{timestamp}**",
+        "",
+        f"Programmes kept in latest build: **{programmes_kept}**",
+        "",
+        f"Window start: `{window_start}`",
+        f"Window end: `{window_end}`",
+        "",
+        "### Source health",
+        "",
+        "| Source | Status | Notes |",
+        "|---|---|---|",
+    ]
+
+    status_map = {}
+    for url in SOURCE_URLS:
+        status_map[url] = ("Working", "")
+
+    for url, reason in failed_sources:
+        status_map[url] = ("Failed", reason)
+
+    for url in SOURCE_URLS:
+        status, notes = status_map[url]
+        notes = notes.replace("\n", " ").replace("|", "\\|")
+        lines.append(f"| `{url}` | {status} | {notes} |")
+
+    lines.extend([
+        "",
+        "### Summary",
+        "",
+        f"- Working sources: **{len(successful_sources)}**",
+        f"- Failed sources: **{len(failed_sources)}**",
+        "",
+    ])
+
+    if failed_sources:
+        lines.append("**Warning:** The latest published EPG may be incomplete because one or more sources failed.")
+        lines.append("")
+    else:
+        lines.append("All configured sources succeeded in the latest build.")
+        lines.append("")
+
+    lines.append(README_STATUS_END)
+    return "\n".join(lines)
+
+
+def update_readme_status(
+    successful_sources: list[str],
+    failed_sources: list[tuple[str, str]],
+    programmes_kept: int,
+    window_start: str,
+    window_end: str,
+) -> None:
+    status_block = build_readme_status_block(
+        successful_sources=successful_sources,
+        failed_sources=failed_sources,
+        programmes_kept=programmes_kept,
+        window_start=window_start,
+        window_end=window_end,
+    )
+
+    if README_PATH.exists():
+        existing = README_PATH.read_text(encoding="utf-8")
+    else:
+        existing = "# US-EPG\n\n"
+
+    if README_STATUS_START in existing and README_STATUS_END in existing:
+        start_index = existing.index(README_STATUS_START)
+        end_index = existing.index(README_STATUS_END) + len(README_STATUS_END)
+        updated = existing[:start_index] + status_block + existing[end_index:]
+    else:
+        if not existing.endswith("\n"):
+            existing += "\n"
+        updated = existing + "\n" + status_block + "\n"
+
+    README_PATH.write_text(updated, encoding="utf-8")
+    print(f"Updated README status block: {README_PATH}")
 
 
 def main():
@@ -274,23 +394,33 @@ def main():
     SITE_DIR.mkdir(parents=True, exist_ok=True)
 
     downloaded_files: list[tuple[str, Path]] = []
+    failed_sources: list[tuple[str, str]] = []
 
     for i, url in enumerate(SOURCE_URLS, start=1):
         local_path = WORK_DIR / f"source_{i}.xml.gz"
         print(f"Downloading source_{i}: {url}")
-        download_file(url, local_path)
-        downloaded_files.append((url, local_path))
+        try:
+            download_file(url, local_path)
+            downloaded_files.append((url, local_path))
+        except Exception as e:
+            print(f"SKIPPING failed download: {url} | {e}")
+            failed_sources.append((url, f"download failed: {e}"))
 
     trees = []
+    successful_sources = []
+
     for url, path in downloaded_files:
         print(f"Parsing {path.name} from {url}")
-        tree = load_xmltv_gz(path, url)
-        trees.append(tree)
+        try:
+            tree = load_xmltv_gz(path, url)
+            trees.append(tree)
+            successful_sources.append(url)
+        except Exception as e:
+            print(f"SKIPPING failed parse: {url} | {e}")
+            failed_sources.append((url, f"parse failed: {e}"))
 
-    if len(trees) != len(SOURCE_URLS):
-        raise RuntimeError(
-            f"Expected {len(SOURCE_URLS)} essential sources, but only parsed {len(trees)}."
-        )
+    if not trees:
+        raise RuntimeError("No valid XMLTV sources were available. Build aborted.")
 
     merged_tree = merge_trees(trees)
     merged_root = merged_tree.getroot()
@@ -299,7 +429,8 @@ def main():
 
     save_xmltv(merged_tree, OUTPUT_XML)
     save_xmltv_gz(merged_tree, OUTPUT_XML_GZ)
-    write_index_html(kept_count, window_start, window_end)
+    write_index_html(kept_count, window_start, window_end, successful_sources, failed_sources)
+    update_readme_status(successful_sources, failed_sources, kept_count, window_start, window_end)
 
     print("Finished.")
     print(f"Saved XML: {OUTPUT_XML}")
@@ -307,6 +438,11 @@ def main():
     print(f"Programmes kept: {kept_count}")
     print(f"Window start: {window_start}")
     print(f"Window end: {window_end}")
+
+    if failed_sources:
+        print("Some sources failed:")
+        for url, reason in failed_sources:
+            print(f" - {url} -> {reason}")
 
 
 if __name__ == "__main__":
