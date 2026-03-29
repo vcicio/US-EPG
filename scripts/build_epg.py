@@ -11,7 +11,7 @@ from pathlib import Path
 DAYS_FORWARD = 10
 
 SOURCE_URLS = [
-    "https://epgshare01.online/epgshare01/epg_ripper_US_LOCALS1.xml.gz",
+    "epg_ripper_US_LOCALS1.xml.gz.webloc",
     "https://epgshare01.online/epgshare01/epg_ripper_US2.xml.gz",
     "https://epgshare01.online/epgshare01/epg_ripper_US_SPORTS1.xml.gz",
 ]
