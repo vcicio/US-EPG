@@ -2,6 +2,12 @@
 
 A custom merged XMLTV feed built from multiple US EPGShare sources and published through GitHub Pages.
 
+## EPG Source URL
+
+Copy the full link below and paste it into the **EPG Source URL** field in your player app:
+
+https://vcicio.github.io/US-EPG/merged_epg.xml.gz
+
 ## Download Links
 
 Use the links below to access the latest published EPG files:
