@@ -306,7 +306,7 @@ def build_readme_status_block(
     window_start: str,
     window_end: str,
 ) -> str:
-    timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
+    timestamp = datetime.now(ZoneInfo("America/Chicago")).strftime("%Y-%m-%d %I:%M:%S %p %Z")
 
     lines = [
         README_STATUS_START,
