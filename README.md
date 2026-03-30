@@ -54,7 +54,7 @@ All configured sources succeeded in the latest build.
 
 - The status section above is updated automatically by `scripts/build_epg.py`
 - The README is committed automatically by the GitHub Actions workflow
-- The generated XML and XML.GZ files are published through GitHub Pages| `https://epgshare01.online/epgshare01/epg_ripper_US_SPORTS1.xml.gz` | Working |  |
+- The generated XML and XML.GZ files are published through GitHub Pages
 
 ### Summary
 
