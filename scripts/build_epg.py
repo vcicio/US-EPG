@@ -207,7 +207,7 @@ def trim_programmes(root: ET.Element, days_forward: int) -> tuple[int, str, str]
     cutoff = now + timedelta(days=days_forward)
 
     all_programmes = root.findall("programme")
-    kept_programmes = []
+    kept_programmes: list[tuple[datetime, str, ET.Element]] = []
 
     for programme in all_programmes:
         start_raw = programme.get("start")
@@ -222,21 +222,38 @@ def trim_programmes(root: ET.Element, days_forward: int) -> tuple[int, str, str]
         except Exception:
             continue
 
+        # Skip invalid programme windows
+        if stop_dt <= start_dt:
+            continue
+
+        # Remove anything that has already completely ended
         if stop_dt <= now:
             continue
 
+        # Remove anything that starts outside the forward window
         if start_dt >= cutoff:
             continue
 
+        # Clip anything that runs beyond the cutoff
         if stop_dt > cutoff:
             programme.set("stop", format_xmltv_datetime(cutoff))
 
-        kept_programmes.append(programme)
+        channel_id = programme.get("channel") or ""
+        kept_programmes.append((start_dt, channel_id, programme))
+
+    # Sort by channel, then start time, then title for stable output
+    kept_programmes.sort(
+        key=lambda item: (
+            item[1],
+            item[0],
+            (item[2].findtext("title") or "").strip(),
+        )
+    )
 
     for programme in all_programmes:
         root.remove(programme)
 
-    for programme in kept_programmes:
+    for _, _, programme in kept_programmes:
         root.append(programme)
 
     return (
