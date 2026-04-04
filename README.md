@@ -16,7 +16,7 @@ https://vcicio.github.io/US-EPG/merged_epg.xml.gz
 
 ## Build Behavior
 
-This project attempts to download all configured source feeds, validate them, merge the valid XMLTV data, trim programmes to the configured date window, and publish the resulting merged guide.
+This project attempts to download all configured source feeds, validate them, merge the valid XMLTV data, trim programmes to the configured date window, and publish the resulting merged guide. The build auto-updates in 6 hour intervals.
 
 If one or more sources fail, the build can still continue as long as at least one source succeeds. When that happens, the generated output and the status section below will indicate that the published EPG may be incomplete.
 
@@ -40,21 +40,6 @@ Window end: `2026-04-14T13:20:37.975165+00:00`
 | `https://epgshare01.online/epgshare01/epg_ripper_US_LOCALS1.xml.gz` | Working |  |
 | `https://epgshare01.online/epgshare01/epg_ripper_US2.xml.gz` | Working |  |
 | `https://epgshare01.online/epgshare01/epg_ripper_US_SPORTS1.xml.gz` | Working |  |
-
-### Summary
-
-- Working sources: **3**
-- Failed sources: **0**
-
-All configured sources succeeded in the latest build.
-
-<!-- EPG_STATUS_END -->
-
-## Notes
-
-- The status section above is updated automatically by `scripts/build_epg.py`
-- The README is committed automatically by the GitHub Actions workflow
-- The generated XML and XML.GZ files are published through GitHub Pages
 
 ### Summary
 
