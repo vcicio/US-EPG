@@ -26,27 +26,27 @@ https://vcicio.github.io/US-EPG/
 
 ## Current Source Status
 <!-- EPG_STATUS_START -->
-Last updated: **2026-08-13 08:50:36 AM CDT**
+Last updated: **2026-08-13 02:19:09 PM CDT**
 
-Programmes kept in latest build: **435642**
+Programmes kept in latest build: **59972**
 
-Window start: `2026-08-13T13:46:09.478472+00:00`
-Window end: `2026-08-23T13:46:09.478472+00:00`
+Window start: `2026-08-13T19:18:56.843005+00:00`
+Window end: `2026-08-23T19:18:56.843005+00:00`
 
 ### Source health
 
 | Source | Status | Notes |
 |---|---|---|
-| `https://epgshare01.online/epgshare01/epg_ripper_US_LOCALS1.xml.gz` | Working |  |
+| `https://epgshare01.online/epgshare01/epg_ripper_US_LOCALS1.xml.gz` | Failed | parse failed: XML parse failed for https://epgshare01.online/epgshare01/epg_ripper_US_LOCALS1.xml.gz: /home/runner/work/US-EPG/US-EPG/work/source_1.xml.gz. Preview: '<?xml version="1.0" encoding="UTF-8" ?>\n<tv generator-info-name="none" generator-info-url="none">\n  <channel id="KQIN-DT.us_locals1">\n    <icon src="http://dtil.tmsimg.com/assets/s32356_ll_h15_ac.png?' |
 | `https://epgshare01.online/epgshare01/epg_ripper_US2.xml.gz` | Working |  |
 | `https://epgshare01.online/epgshare01/epg_ripper_US_SPORTS1.xml.gz` | Working |  |
 
 ### Summary
 
-- Working sources: **3**
-- Failed sources: **0**
+- Working sources: **2**
+- Failed sources: **1**
 
-All configured sources succeeded in the latest build.
+**Warning:** The latest published EPG may be incomplete because one or more sources failed.
 
 <!-- EPG_STATUS_END -->
 
