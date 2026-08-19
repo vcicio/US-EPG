@@ -1,15 +1,23 @@
+import copy
 import gzip
+import json
+import re
 import shutil
 import time
 import urllib.request
 import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+from typing import Optional
 from zoneinfo import ZoneInfo
 
 
 # ===== SETTINGS =====
 DAYS_FORWARD = 10
+STATE_DAYS_FORWARD = 3
+STATES = [
+    "AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "FL", "GA", "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA", "ME", "MD", "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ", "NM", "NY", "NC", "ND", "OH", "OK", "OR", "PA", "RI", "SC", "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV", "WI", "WY", "DC"
+]
 
 SOURCE_URLS = [
     "https://epgshare01.online/epgshare01/epg_ripper_US_LOCALS1.xml.gz",
@@ -21,6 +29,8 @@ ROOT_DIR = Path(__file__).resolve().parents[1]
 WORK_DIR = ROOT_DIR / "work"
 SITE_DIR = ROOT_DIR / "site"
 README_PATH = ROOT_DIR / "README.md"
+STATION_STATES_PATH = ROOT_DIR / "config" / "station_states.json"
+NFL_MARKETS_PATH = ROOT_DIR / "config" / "nfl_markets.json"
 
 OUTPUT_XML_GZ = SITE_DIR / "merged_epg.xml.gz"
 OUTPUT_XML = SITE_DIR / "merged_epg.xml"
@@ -202,6 +212,136 @@ def merge_trees(trees: list[ET.ElementTree]) -> ET.ElementTree:
     return ET.ElementTree(base_root)
 
 
+def load_json(path: Path) -> dict:
+    with path.open(encoding="utf-8") as f:
+        return json.load(f)
+
+
+def callsign_from_channel_id(channel_id: str) -> str:
+    """Return the callsign used by the fallback map for a US_LOCALS1 id."""
+    return channel_id.split(".us_locals1", 1)[0].split(".", 1)[0]
+
+
+def classify_local_channel(channel_id: str, station_states: dict) -> Optional[str]:
+    """Prefer source-embedded city/state metadata, then exact configured overrides."""
+    embedded = re.search(r",([A-Z]{2})\.us_locals1$", channel_id)
+    if embedded and embedded.group(1) in STATES:
+        return embedded.group(1)
+    if channel_id in station_states.get("by_channel_id", {}):
+        return station_states["by_channel_id"][channel_id]
+    callsign = callsign_from_channel_id(channel_id)
+    state = station_states.get("by_callsign", {}).get(callsign)
+    return state if state in STATES else None
+
+
+def channel_kind(channel_id: str) -> str:
+    if channel_id.endswith(".us_locals1"):
+        return "locals"
+    if channel_id.endswith(".us2"):
+        return "us2"
+    # US_SPORTS1 currently uses the generic `.us` suffix, while older
+    # snapshots used `.us_sports1`; treat both as the sports source.
+    if channel_id.endswith(".us_sports1") or channel_id.endswith(".us"):
+        return "sports"
+    return "other"
+
+
+def build_state_tree(channel_map: dict[str, ET.Element], programmes_by_channel: dict[str, list[ET.Element]], state: str, station_states: dict, nfl_markets: dict) -> tuple[ET.ElementTree, int]:
+    """Build one optimized feed from the already merged in-memory XML tree."""
+    nfl_callsigns = set(nfl_markets.get("stations", []))
+    selected_ids: set[str] = set()
+    unresolved: list[str] = []
+
+    for channel_id in channel_map:
+        kind = channel_kind(channel_id)
+        include = kind in {"us2", "sports"}
+        if kind == "locals":
+            channel_state = classify_local_channel(channel_id, station_states)
+            callsign = callsign_from_channel_id(channel_id)
+            include = channel_state == state or callsign in nfl_callsigns
+            if channel_state is None and callsign not in nfl_callsigns:
+                unresolved.append(channel_id)
+        if include:
+            selected_ids.add(channel_id)
+
+    root = ET.Element("tv", {"generator-info-name": "US-EPG state feed"})
+    for channel_id in sorted(selected_ids):
+        root.append(copy.deepcopy(channel_map[channel_id]))
+
+    now = datetime.now().astimezone()
+    cutoff = now + timedelta(days=STATE_DAYS_FORWARD)
+    programmes: list[tuple[str, datetime, ET.Element]] = []
+    seen: set[tuple] = set()
+    for channel_id in selected_ids:
+      for programme in programmes_by_channel.get(channel_id, []):
+          try:
+              start = parse_xmltv_datetime(programme.get("start", "")).astimezone(now.tzinfo)
+              stop = parse_xmltv_datetime(programme.get("stop", "")).astimezone(now.tzinfo)
+          except Exception:
+              continue
+          if stop <= start or stop <= now or start >= cutoff:
+              continue
+          item = copy.deepcopy(programme)
+          if stop > cutoff:
+              item.set("stop", format_xmltv_datetime(cutoff))
+          key = (channel_id, item.get("start"), item.get("stop"), (item.findtext("title") or "").strip())
+          if key not in seen:
+              seen.add(key)
+              programmes.append((channel_id, start, item))
+    programmes.sort(key=lambda item: (item[0], item[1], (item[2].findtext("title") or "").strip()))
+    for _, _, item in programmes:
+        root.append(item)
+    # No channel without a programme is useful to a player.
+    used = {item.get("channel") for item in root.findall("programme")}
+    for channel in list(root.findall("channel")):
+        if channel.get("id") not in used:
+            root.remove(channel)
+    return ET.ElementTree(root), len(unresolved)
+
+
+def write_state_feeds(merged_root: ET.Element) -> dict[str, int]:
+    station_states = load_json(STATION_STATES_PATH)
+    nfl_markets = load_json(NFL_MARKETS_PATH)
+    channel_map = {channel.get("id"): channel for channel in merged_root.findall("channel") if channel.get("id")}
+    programmes_by_channel: dict[str, list[ET.Element]] = {}
+    for programme in merged_root.findall("programme"):
+        channel_id = programme.get("channel")
+        if channel_id:
+            programmes_by_channel.setdefault(channel_id, []).append(programme)
+    # Parse the 3-day window once. The same US2/sports programmes are shared
+    # by every state, so repeating datetime parsing 51 times is needlessly
+    # expensive.
+    now = datetime.now().astimezone()
+    cutoff = now + timedelta(days=STATE_DAYS_FORWARD)
+    prepared: dict[str, list[ET.Element]] = {}
+    for channel_id, items in programmes_by_channel.items():
+        for programme in items:
+            try:
+                start = parse_xmltv_datetime(programme.get("start", "")).astimezone(now.tzinfo)
+                stop = parse_xmltv_datetime(programme.get("stop", "")).astimezone(now.tzinfo)
+            except Exception:
+                continue
+            if stop <= start or stop <= now or start >= cutoff:
+                continue
+            item = copy.deepcopy(programme)
+            if stop > cutoff:
+                item.set("stop", format_xmltv_datetime(cutoff))
+            prepared.setdefault(channel_id, []).append(item)
+    counts: dict[str, int] = {}
+    for state in STATES:
+        tree, unresolved = build_state_tree(channel_map, prepared, state, station_states, nfl_markets)
+        save_xmltv_gz(tree, SITE_DIR / "states" / f"{state}.xml.gz")
+        counts[state] = len(tree.getroot().findall("channel"))
+    unresolved_total = sum(
+        1 for channel in merged_root.findall("channel")
+        if channel_kind(channel.get("id", "")) == "locals"
+        and classify_local_channel(channel.get("id", ""), station_states) is None
+        and callsign_from_channel_id(channel.get("id", "")) not in set(nfl_markets.get("stations", []))
+    )
+    print(f"Generated {len(STATES)} state feeds; {unresolved_total} local channels have no state mapping and were omitted from state feeds.")
+    return counts
+
+
 def trim_programmes(root: ET.Element, days_forward: int) -> tuple[int, str, str]:
     now = datetime.now().astimezone()
     cutoff = now + timedelta(days=days_forward)
@@ -276,6 +416,9 @@ def write_index_html(
     failed_html = "\n".join(
         f"    <li><strong>{src}</strong><br>{reason}</li>" for src, reason in failed_sources
     ) or "    <li>None</li>"
+    state_links_html = "\n".join(
+        f'    <li><a href="states/{state}.xml.gz">{state}.xml.gz</a></li>' for state in STATES
+    )
 
     warning_html = ""
     if failed_sources:
@@ -296,6 +439,12 @@ def write_index_html(
 {warning_html}
   <p><a href="merged_epg.xml.gz">Download merged_epg.xml.gz</a></p>
   <p><a href="merged_epg.xml">Download merged_epg.xml</a></p>
+
+  <h2>State-optimized feeds (3-day window)</h2>
+  <p>Each state feed includes that state's mapped locals, the shared NFL-market affiliates, US2, and US_SPORTS1.</p>
+  <ul>
+{state_links_html}
+  </ul>
 
   <p>Programmes kept: {programmes_kept}</p>
   <p>Window start: {window_start}</p>
@@ -442,6 +591,11 @@ def main():
     merged_root = merged_tree.getroot()
 
     kept_count, window_start, window_end = trim_programmes(merged_root, DAYS_FORWARD)
+
+    # The full feed above remains the existing 10-day merged output. State
+    # feeds are generated from the same parsed tree with a separate 3-day
+    # window and never alter the full-feed tree.
+    state_channel_counts = write_state_feeds(merged_root)
 
     save_xmltv(merged_tree, OUTPUT_XML)
     save_xmltv_gz(merged_tree, OUTPUT_XML_GZ)
