@@ -1,4 +1,3 @@
-
 import copy
 import gzip
 import json
@@ -259,13 +258,9 @@ def build_state_tree(channel_map: dict[str, ET.Element], programmes_by_channel: 
         if kind == "locals":
             channel_state = classify_local_channel(channel_id, station_states)
             callsign = callsign_from_channel_id(channel_id)
-            # The source contains many bare callsigns with no state metadata.
-            # Keep those channels in every state feed as a safe availability
-            # fallback; omitting them makes local stations disappear entirely.
             include = channel_state == state or callsign in nfl_callsigns
             if channel_state is None and callsign not in nfl_callsigns:
                 unresolved.append(channel_id)
-                include = True
         if include:
             selected_ids.add(channel_id)
 

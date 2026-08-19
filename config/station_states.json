@@ -1,0 +1,27 @@
+{
+  "description": "Exact fallback mappings for US_LOCALS1 callsigns that do not carry a city/state in the channel id. Keep this file small and review the unresolved list printed by the build.",
+  "by_channel_id": {
+    "BEK.Sports.24/7.(KNDM2).Minot,.ND.us_locals1": "ND",
+    "FOX.(WCTI-TV2).New.Bern,.NC.us_locals1": "NC",
+    "BEK.Sports.(KRDK-TV2).Fargo,.ND.us_locals1": "ND",
+    "BEK.Sports.24/7.(KNDB2).Bismarck,.ND.us_locals1": "ND",
+    "Beach.TV.(WDES-CD).Destin,.FL.us_locals1": "FL"
+  },
+  "by_callsign": {
+    "WLS-TV": "IL", "WBBM-TV": "IL", "WMAQ-TV": "IL", "WFLD": "IL", "WGN-TV": "IL", "WPWR-TV": "IL",
+    "KABC-TV": "CA", "KCBS-TV": "CA", "KNBC": "CA", "KTTV": "CA", "KTLA": "CA", "KCAL-TV": "CA",
+    "WABC-TV": "NY", "WCBS-TV": "NY", "WNBC": "NY", "WNYW": "NY", "WWOR-TV": "NY", "WPIX": "NY",
+    "WJLA-TV": "DC", "WTTG": "DC", "WRC-TV": "DC", "WUSA": "DC", "WDCA": "DC", "WTXF-TV": "PA",
+    "KARE": "MN", "KMSP-TV": "MN", "WCCO-TV": "MN", "KSTP-TV": "MN",
+    "WISN-TV": "WI", "WTMJ-TV": "WI", "WITI": "WI", "WVTV": "WI",
+    "WXYZ-TV": "MI", "WWJ-TV": "MI", "WDIV-TV": "MI", "WJBK": "MI", "WKBD-TV": "MI",
+    "KPHO-TV": "AZ", "KPNX": "AZ", "KSAZ-TV": "AZ", "KNXV-TV": "AZ", "KTVK": "AZ",
+    "KDFW": "TX", "KXAS-TV": "TX", "WFAA": "TX", "KTVT": "TX", "KDAF": "TX", "KTXA": "TX",
+    "KTRK-TV": "TX", "KHOU": "TX", "KPRC-TV": "TX", "KRIV": "TX", "KIAH": "TX",
+    "KUSA": "CO", "KCNC-TV": "CO", "KDVR": "CO", "KMGH-TV": "CO",
+    "KCTV": "MO", "KMBC-TV": "MO", "KSHB-TV": "MO", "WDAF-TV": "MO",
+    "KTRK": "TX", "KXAN-TV": "TX", "KXAN": "TX", "KSAT-TV": "TX", "WOAI-TV": "TX", "KABB": "TX",
+    "WESH": "FL", "WKMG-TV": "FL", "WFTV": "FL", "WOFL": "FL", "WFTS-TV": "FL", "WTSP": "FL",
+    "WPLG": "FL", "WFOR-TV": "FL", "WSVN": "FL", "WTVJ": "FL", "WPEC": "FL", "WPBF": "FL"
+  }
+}
