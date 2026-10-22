@@ -85,12 +85,12 @@ https://vcicio.github.io/US-EPG/
 
 ## Current Source Status
 <!-- EPG_STATUS_START -->
-Last updated: **2026-10-22 12:40:47 AM CDT**
+Last updated: **2026-10-22 07:46:02 AM CDT**
 
-Programmes kept in latest build: **340282**
+Programmes kept in latest build: **290926**
 
-Window start: `2026-10-22T04:42:11.705441+00:00`
-Window end: `2026-11-01T04:42:11.705441+00:00`
+Window start: `2026-10-22T11:50:03.229942+00:00`
+Window end: `2026-11-01T11:50:03.229942+00:00`
 
 ### Source health
 
